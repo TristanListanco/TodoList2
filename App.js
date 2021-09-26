@@ -1,9 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,25 +16,55 @@ import Task from "./components/Task";
 
 export default function App() {
   const [task, setTask] = useState();
+  const [taskItems, setTaskItems] = useState([]);
+  const handleAddTask = () => {
+    Keyboard.dismiss();
+    setTaskItems([...taskItems, task]);
+    setTask(null);
+  };
+  const completeTask = (index) => {
+    let itemsCopy = [...taskItems];
+    itemsCopy.splice(index, 1);
+    setTaskItems(itemsCopy);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/*Today's Tasks*/}
-      <View style={styles.taskWrapper}>
-        <Text style={styles.sectionTitle}>Today's Tasks</Text>
-        <View style={styles.items}>
-          {/*This is where the tasks will go */}
-          <Task text={"Task 1"} />
-          <Task text={"Task 2"} />
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+      >
+        {/* Today's Tasks */}
+        <View style={styles.tasksWrapper}>
+          <Text style={styles.sectionTitle}>Today's tasks</Text>
+          <View style={styles.items}>
+            {/* This is where the tasks will go! */}
+            {taskItems.map((item, index) => {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => completeTask(index)}
+                >
+                  <Task text={item} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
-      </View>
+      </ScrollView>
       {/*Write a Task*/}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.writeTaskWrapper}
       >
-        <TextInput style={styles.input} placeholder={"Write a task"} />
-        <TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder={"Write a task"}
+          onChangeText={(text) => setTask(text)}
+          value={task}
+        />
+        <TouchableOpacity onPress={() => handleAddTask()}>
           <View style={styles.addWrapper}>
             <Text style={styles.addText}>+</Text>
           </View>
@@ -47,8 +79,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#E8EAED",
   },
-  taskWrapper: {
-    paddingTop: 70,
+  tasksWrapper: {
+    paddingTop: 50,
     paddingHorizontal: 20,
   },
   sectionTitle: {
